@@ -8,6 +8,7 @@
 class game {
 public:
 	game();
+	game(const game& other);
 	static sf::Texture textures[card::King + 1][card::Clubs + 1];
 	static sf::Texture faceDown;
 	void draw(sf::RenderWindow&);
@@ -19,6 +20,7 @@ public:
 	static void loadTextures();
 	static sf::Texture* getTexture(const pileCard&);
 	void onMouseMove(const sf::Vector2i&);
+	bool isUndoButtonPressed(const sf::Vector2i& mousePos);
 	~game();
 private:
 	sf::Texture backgroundTexture;
