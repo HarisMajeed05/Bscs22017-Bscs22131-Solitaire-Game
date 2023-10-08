@@ -27,6 +27,26 @@ game::game() :sPile(nullptr) {
 	redoButtonText.setFillColor(sf::Color::Black);
 	redoButtonText.setPosition(Width / 9 - 104, Height / 7 + 10);
 }
+game::game(const game& other) {
+	backgroundTexture = other.backgroundTexture;
+	background.setTexture(backgroundTexture);
+	piles.clear();
+	for (const auto& pile : other.piles) {
+		piles.push_back(pile);
+	}
+	mouseOffset = other.mouseOffset;
+	isUndoMode = other.isUndoMode;
+	undoButton = other.undoButton;
+	undoButtonText = other.undoButtonText;
+	redoButton = other.redoButton;
+	redoButtonText = other.redoButtonText;
+	loadTextures();
+}
+
+
+
+
+
 
 bool game::isWin() {
 	for (unsigned int i = 0; i < 4; i++) {
@@ -66,33 +86,22 @@ void game::loadTextures() {
 	}
 }
 void game::onMouseDown(const sf::Vector2i& mousePos,int c) {
-	if (undoButton.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos))) {
-		if (c == 0)
-			return;
-		else {
-			undo();
-			isUndoMode = true;
-		}
+	unsigned int i;
+	for (i = 0; i < piles.size() && (sPile = piles[i]->splitPile(mousePos)) == nullptr; i++);
+	if (i < piles.size()) {
+		mouseOffset = mousePos - sPile->getOffset();
 	}
-	else {
-		unsigned int i;
-		for (i = 0; i < piles.size() && (sPile = piles[i]->splitPile(mousePos)) == nullptr; i++);
-		if (i < piles.size()) {
-			mouseOffset = mousePos - sPile->getOffset();
-		}
-	}
+}
+bool game::isUndoButtonPressed(const sf::Vector2i& mousePos) {
+	return undoButton.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos));
 }
 
 void game::onMouseUp() {
-	if (isUndoMode) {
-		isUndoMode = false;
-	}
-	else {
-		if (sPile) {
-			sPile->onMouseUp(piles);
-			delete sPile;
-			sPile = nullptr;
-		}
+	
+	if (sPile) {
+		sPile->onMouseUp(piles);
+		delete sPile;
+		sPile = nullptr;
 	}
 }
 
@@ -102,7 +111,8 @@ void game::onMouseMove(const sf::Vector2i& mousePos) {
 	}
 }
 void game::undo() {
-	
+	game prevState(*this);
+	*this = prevState;
 }
 
 
